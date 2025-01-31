@@ -3,7 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @State private var folders: [Folder] = [
         Folder(name: "Important", tasks: [Task(title: "Swift öğren"), Task(title: "Proje sunumu hazırla")]),
-        Folder(name: "Daily", tasks: [Task(title: "Market alışverişi"), Task(title: "Spor yap")])
+        Folder(name: "Daily", tasks: [Task(title: "Market alışverişleri"), Task(title: "Spor yap")])
     ]
 
     @State private var searchText: String = ""
