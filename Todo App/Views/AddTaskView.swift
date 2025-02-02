@@ -3,38 +3,36 @@ import SwiftUI
 struct AddTaskView: View {
     @Binding var folders: [Folder]
     @Binding var selectedFolderIndex: Int?
-    var isAddingInsideFolder: Bool = false // 🆕 Klasör içinden mi çağrıldı?
+    var isAddingInsideFolder: Bool = false
 
     @State private var folderNameInput: String = ""
     @State private var newTaskTitle: String = ""
     @State private var isReminderEnabled: Bool = false
     @State private var reminderDate: Date = Date()
-    
+    @State private var isStarred: Bool = false
+
     @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    if !isAddingInsideFolder { // 🆕 Eğer klasör içinden eklenmiyorsa göster
+                    if !isAddingInsideFolder {
                         Text("Klasör Seç")
                             .font(.headline)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
 
                         Picker("Klasör Seç", selection: $selectedFolderIndex) {
-                            Text("Yeni Klasör Oluştur").tag(-1)
+                            Text("Yeni Klasör Ekle").tag(-1) // ✅ Varsayılan olarak seçili olacak
                             ForEach(folders.indices, id: \.self) { index in
                                 Text(folders[index].name).tag(index)
                             }
                         }
                         .pickerStyle(MenuPickerStyle())
-                        .frame(maxWidth: .infinity)
                         .padding(.horizontal)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
                         .onAppear {
-                            selectedFolderIndex = -1
+                            selectedFolderIndex = -1 // ✅ Varsayılan olarak "Yeni Klasör Ekle" seçili
                         }
 
                         if selectedFolderIndex == -1 {
@@ -56,6 +54,9 @@ struct AddTaskView: View {
                             .datePickerStyle(GraphicalDatePickerStyle())
                             .padding()
                     }
+
+                    Toggle("Yıldızlı Görev", isOn: $isStarred)
+                        .padding(.horizontal)
 
                     Button(action: { addTask() }) {
                         HStack {
@@ -84,17 +85,16 @@ struct AddTaskView: View {
     private func addTask() {
         guard !newTaskTitle.isEmpty else { return }
 
+        let newTask = Task(title: newTaskTitle, isStarred: isStarred, reminderDate: isReminderEnabled ? reminderDate : nil)
+
         if isAddingInsideFolder, let selectedFolderIndex = selectedFolderIndex {
-            // 📌 Klasör içinden çağrıldıysa sadece mevcut klasöre görev ekle
-            folders[selectedFolderIndex].tasks.append(Task(title: newTaskTitle, reminderDate: isReminderEnabled ? reminderDate : nil))
+            folders[selectedFolderIndex].tasks.append(newTask)
         } else {
-            // 📌 Ana sayfadan çağrıldıysa önce klasör seçmeli veya oluşturmalı
             if selectedFolderIndex == -1 {
                 guard !folderNameInput.isEmpty else { return }
-                let newFolder = Folder(name: folderNameInput, tasks: [Task(title: newTaskTitle, reminderDate: isReminderEnabled ? reminderDate : nil)])
+                let newFolder = Folder(name: folderNameInput, tasks: [newTask])
                 folders.append(newFolder)
             } else if let selectedIndex = selectedFolderIndex {
-                let newTask = Task(title: newTaskTitle, reminderDate: isReminderEnabled ? reminderDate : nil)
                 folders[selectedIndex].tasks.append(newTask)
             }
         }

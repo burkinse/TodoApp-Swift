@@ -8,39 +8,36 @@ struct FolderView: View {
     var body: some View {
         VStack {
             List {
-                // 📌 **Aktif (Tamamlanmamış) Görevler**
                 Section(header: Text("Aktif Görevler")) {
-                    ForEach(folder.tasks.indices.filter { !folder.tasks[$0].isCompleted }, id: \.self) { index in
+                    ForEach(folder.tasks.indices, id: \.self) { index in
                         HStack {
-                            Button(action: {
-                                folder.tasks[index].isCompleted.toggle()
-                            }) {
-                                Image(systemName: "circle")
-                                    .foregroundColor(.gray)
+                            Image(systemName: folder.tasks[index].isCompleted ? "checkmark.circle.fill" : "circle")
+                                .foregroundColor(folder.tasks[index].isCompleted ? .green : .gray)
+                                .onTapGesture {
+                                    folder.tasks[index].isCompleted.toggle()
+                                }
+
+                            VStack(alignment: .leading) {
+                                Text(folder.tasks[index].title)
+                                    .foregroundColor(folder.tasks[index].isCompleted ? .gray : .black)
+
+                                if let reminderDate = folder.tasks[index].reminderDate {
+                                    Text("\(formattedDate(reminderDate))") // 🕒 Tarihi göster
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
                             }
-                            Text(folder.tasks[index].title)
+
+                            Spacer()
+
+                            Image(systemName: folder.tasks[index].isStarred ? "star.fill" : "star")
+                                .foregroundColor(folder.tasks[index].isStarred ? .yellow : .gray)
+                                .onTapGesture {
+                                    folder.tasks[index].isStarred.toggle()
+                                }
                         }
                     }
                     .onDelete(perform: deleteTask)
-                }
-
-                // 📌 **Tamamlanan Görevler (En Alta Taşındı)**
-                if folder.tasks.contains(where: { $0.isCompleted }) {
-                    Section(header: Text("✅ Tamamlananlar")) {
-                        ForEach(folder.tasks.indices.filter { folder.tasks[$0].isCompleted }, id: \.self) { index in
-                            HStack {
-                                Button(action: {
-                                    folder.tasks[index].isCompleted.toggle() // ✅ Geri alınabilir!
-                                }) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
-                                }
-                                Text(folder.tasks[index].title)
-                                    .strikethrough(true, color: .gray)
-                                    .foregroundColor(.gray)
-                            }
-                        }
-                    }
                 }
             }
 
@@ -60,6 +57,14 @@ struct FolderView: View {
 
     private func deleteTask(at offsets: IndexSet) {
         folder.tasks.remove(atOffsets: offsets)
+    }
+
+    // 📅 **Tarihi formatlamak için fonksiyon**
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "tr_TR") // Türkçe tarih formatı
+        formatter.dateFormat = "dd MMMM yyyy, HH:mm"
+        return formatter.string(from: date)
     }
 }
 
