@@ -15,4 +15,3 @@ struct Folder: Identifiable {
     var name: String
     var tasks: [Task]
 }
-

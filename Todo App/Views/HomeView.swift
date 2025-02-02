@@ -95,8 +95,14 @@ struct HomeView: View {
                                     HStack {
                                         Image(systemName: "folder.fill")
                                             .foregroundColor(.blue)
-                                        Text(folders[index].name)
-                                            .font(.headline)
+                                        VStack(alignment: .leading) {
+                                            Text(folders[index].name)
+                                                .font(.headline)
+                                            Text("\(folders[index].tasks.count) görev")
+                                                .font(.subheadline)
+                                                .foregroundColor(.gray)
+                                        }
+                                        Spacer()
                                     }
                                 }
                             }

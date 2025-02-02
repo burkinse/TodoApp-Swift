@@ -102,4 +102,3 @@ struct AddTaskView: View {
         presentationMode.wrappedValue.dismiss()
     }
 }
-

@@ -67,4 +67,3 @@ struct FolderView: View {
         return formatter.string(from: date)
     }
 }
-
