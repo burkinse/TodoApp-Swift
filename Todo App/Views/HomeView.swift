@@ -3,48 +3,36 @@ import SwiftUI
 struct HomeView: View {
     @State private var folders: [Folder] = [
         Folder(name: "Important", tasks: [Task(title: "Swift öğren"), Task(title: "Proje sunumu hazırla")]),
-        Folder(name: "Daily", tasks: [Task(title: "Market alışverişleri"), Task(title: "Spor yap")])
+        Folder(name: "Daily", tasks: [Task(title: "Market alışverişi"), Task(title: "Spor yap")])
     ]
 
     @State private var searchText: String = ""
     @State private var newFolderName: String = ""
     @State private var showAddFolderAlert = false
     @State private var showAddTaskView = false
+    @State private var selectedFolderIndex: Int?
 
-    // 🔍 **Güncellenmiş Arama Fonksiyonu**
+    // 📌 **Sadece Görevleri Filtreleme**
     var filteredTasks: [(folderIndex: Int, taskIndex: Int, task: Task)] {
         let allTasks = folders.enumerated().flatMap { (folderIndex, folder) in
             folder.tasks.enumerated().map { (taskIndex, task) in
                 (folderIndex, taskIndex, task)
             }
         }
-
-        // Eğer arama boşsa görevleri göstermeyelim
-        if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return []
-        } else {
-            return allTasks.filter { taskData in
-                let taskTitle = taskData.2.title.lowercased()
-                let searchInput = searchText.lowercased()
-
-                return taskTitle.range(of: searchInput, options: .caseInsensitive) != nil
-            }
-        }
+        return searchText.isEmpty ? [] : allTasks.filter { $0.2.title.localizedCaseInsensitiveContains(searchText) }
     }
 
     var body: some View {
         NavigationView {
             VStack {
-                // 🔍 Search Bar
+                // 🔍 **Search Bar (Sadece Görevler İçin)**
                 HStack {
                     TextField("Görev Ara...", text: $searchText)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding(.leading)
 
                     if !searchText.isEmpty {
-                        Button(action: {
-                            searchText = "" // Arama metnini temizle
-                        }) {
+                        Button(action: { searchText = "" }) {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundColor(.gray)
                                 .padding(.trailing, 8)
@@ -54,74 +42,65 @@ struct HomeView: View {
                 .padding()
 
                 List {
-                    if searchText.isEmpty {
-                        // 📂 **Klasörleri Listele**
-                        ForEach(folders.indices, id: \.self) { index in
-                            NavigationLink(destination: FolderView(folder: $folders[index])) {
+                    // 🔍 **Sadece Görev Arama Sonuçları**
+                    if !searchText.isEmpty {
+                        Section(header: Text("Arama Sonuçları")) {
+                            ForEach(filteredTasks, id: \.2.id) { (folderIndex, taskIndex, task) in
                                 HStack {
-                                    Image(systemName: "folder.fill")
-                                        .foregroundColor(.blue)
-                                    Text(folders[index].name)
-                                        .font(.headline)
+                                    Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
+                                        .foregroundColor(task.isCompleted ? .green : .gray)
+                                    VStack(alignment: .leading) {
+                                        Text(task.title)
+                                            .strikethrough(task.isCompleted, color: .gray)
+                                            .foregroundColor(task.isCompleted ? .gray : .black)
+                                        Text("Klasör: \(folders[folderIndex].name)") // 📌 Görevin hangi klasörde olduğu gösteriliyor
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
+                                    Spacer()
+                                }
+                                .contentShape(Rectangle()) // Tıklamayı kolaylaştırmak için
+                                .onTapGesture {
+                                    toggleTaskCompletion(folderIndex: folderIndex, taskIndex: taskIndex)
                                 }
                             }
                         }
-                        .onDelete(perform: deleteAtIndex)
                     } else {
-                        // 🔎 **Arama Sonuçları (Görevler)**
-                        ForEach(filteredTasks, id: \.2.id) { (folderIndex, taskIndex, task) in
-                            HStack {
-                                Button(action: {
-                                    toggleTaskCompletion(folderIndex: folderIndex, taskIndex: taskIndex)
-                                }) {
-                                    Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                                        .foregroundColor(task.isCompleted ? .green : .gray)
+                        // 📂 **Klasör Listesi (Sadece Search Bar Boşken Görünecek!)**
+                        Section(header: Text("Klasörler")) {
+                            ForEach(folders.indices, id: \.self) { index in
+                                NavigationLink(destination: FolderView(folder: $folders[index], folders: $folders)) {
+                                    HStack {
+                                        Image(systemName: "folder.fill")
+                                            .foregroundColor(.blue)
+                                        Text(folders[index].name)
+                                            .font(.headline)
+                                    }
                                 }
-                                Text(task.title)
-                                    .strikethrough(task.isCompleted, color: .gray)
-                                    .foregroundColor(task.isCompleted ? .gray : .black)
                             }
+                            .onDelete(perform: deleteAtIndex)
                         }
                     }
                 }
 
                 Spacer()
 
-                // 📂 **Klasör Ekle & Görev Ekle Butonları**
                 HStack {
-                    // 📂 Klasör Ekle Butonu
-                    Button(action: {
-                        showAddFolderAlert = true
-                    }) {
-                        HStack {
-                            Image(systemName: "folder.badge.plus")
-                                .foregroundColor(.blue)
-                                .font(.largeTitle)
-                            Text("Klasör Ekle")
-                                .font(.headline)
-                                .foregroundColor(.blue)
-                        }
-                        .padding()
+                    Button(action: { showAddFolderAlert = true }) {
+                        Label("Klasör Ekle", systemImage: "folder.badge.plus")
+                            .font(.headline)
+                            .padding()
                     }
 
                     Spacer()
 
-                    // ✅ Görev Ekle Butonu
-                    Button(action: {
-                        showAddTaskView = true
-                    }) {
-                        HStack {
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundColor(.green)
-                                .font(.largeTitle)
-                            Text("Görev Ekle")
-                                .font(.headline)
-                                .foregroundColor(.green)
-                        }
-                        .padding()
+                    Button(action: { showAddTaskView = true }) {
+                        Label("Görev Ekle", systemImage: "plus.circle.fill")
+                            .font(.headline)
+                            .padding()
                     }
                     .sheet(isPresented: $showAddTaskView) {
-                        AddTaskView(folders: $folders)
+                        AddTaskView(folders: $folders, selectedFolderIndex: $selectedFolderIndex)
                     }
                 }
                 .padding()
@@ -141,24 +120,17 @@ struct HomeView: View {
         folders[folderIndex].tasks[taskIndex].isCompleted.toggle()
     }
 
-    // ✅ **Klasör Ekleme Fonksiyonu**
+    // 📌 **Klasör Ekleme**
     private func addNewFolder() {
         if !newFolderName.isEmpty {
-            let newFolder = Folder(name: newFolderName, tasks: [])
-            folders.append(newFolder)
+            folders.append(Folder(name: newFolderName, tasks: []))
             newFolderName = ""
         }
     }
 
-    // ✅ **Klasör Silme Fonksiyonu**
+    // 📌 **Klasör Silme**
     private func deleteAtIndex(at offsets: IndexSet) {
         folders.remove(atOffsets: offsets)
-    }
-}
-
-struct HomeView_Previews: PreviewProvider {
-    static var previews: some View {
-        HomeView()
     }
 }
 

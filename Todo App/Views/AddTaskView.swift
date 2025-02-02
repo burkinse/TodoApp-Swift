@@ -1,100 +1,105 @@
-//
-//  AddTaskView.swift
-//  Todo App
-//
-//  Created by Burak 2 on 2025-01-31.
-//
-
 import SwiftUI
 
 struct AddTaskView: View {
     @Binding var folders: [Folder]
-    
-    @State private var selectedFolderIndex: Int = 0
-    @State private var newFolderName: String = ""
+    @Binding var selectedFolderIndex: Int?
+    var isAddingInsideFolder: Bool = false // 🆕 Klasör içinden mi çağrıldı?
+
+    @State private var folderNameInput: String = ""
     @State private var newTaskTitle: String = ""
+    @State private var isReminderEnabled: Bool = false
+    @State private var reminderDate: Date = Date()
     
     @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
         NavigationView {
-            VStack {
-                Text("Görevi hangi klasöre eklemek istersiniz?")
-                    .font(.headline)
-                    .padding()
-
-                // 📂 Mevcut Klasör Seçimi veya Yeni Klasör Adı Girişi
-                Picker("Klasör Seç", selection: $selectedFolderIndex) {
-                    ForEach(0..<folders.count, id: \.self) { index in
-                        Text(folders[index].name).tag(index)
-                    }
-                    Text("Yeni Klasör Oluştur").tag(folders.count)
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding()
-
-                if selectedFolderIndex == folders.count {
-                    TextField("Yeni Klasör Adı", text: $newFolderName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding()
-                }
-
-                // 📌 Görev Adı Girişi
-                TextField("Görev Adını Girin", text: $newTaskTitle)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
-
-                Spacer()
-
-                // ✅ Kaydet Butonu
-                Button(action: {
-                    saveTask()
-                }) {
-                    HStack {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.white)
-                            .font(.title)
-                        Text("Kaydet")
-                            .foregroundColor(.white)
+            ScrollView {
+                VStack(spacing: 20) {
+                    if !isAddingInsideFolder { // 🆕 Eğer klasör içinden eklenmiyorsa göster
+                        Text("Klasör Seç")
                             .font(.headline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
+
+                        Picker("Klasör Seç", selection: $selectedFolderIndex) {
+                            Text("Yeni Klasör Oluştur").tag(-1)
+                            ForEach(folders.indices, id: \.self) { index in
+                                Text(folders[index].name).tag(index)
+                            }
+                        }
+                        .pickerStyle(MenuPickerStyle())
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
+                        .onAppear {
+                            selectedFolderIndex = -1
+                        }
+
+                        if selectedFolderIndex == -1 {
+                            TextField("Yeni Klasör Adını Girin", text: $folderNameInput)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .padding(.horizontal)
+                        }
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.green)
-                    .cornerRadius(10)
-                    .padding()
+
+                    TextField("Görev Adını Girin", text: $newTaskTitle)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding(.horizontal)
+
+                    Toggle("Hatırlatıcı Ekle", isOn: $isReminderEnabled)
+                        .padding(.horizontal)
+
+                    if isReminderEnabled {
+                        DatePicker("Hatırlatma Zamanı", selection: $reminderDate, displayedComponents: [.date, .hourAndMinute])
+                            .datePickerStyle(GraphicalDatePickerStyle())
+                            .padding()
+                    }
+
+                    Button(action: { addTask() }) {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.white)
+                            Text("Görevi Ekle")
+                                .foregroundColor(.white)
+                                .font(.headline)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(newTaskTitle.isEmpty ? Color.gray : Color.green)
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                    }
+                    .disabled(newTaskTitle.isEmpty)
+
+                    Spacer()
                 }
+                .padding()
             }
-            .navigationTitle("Görev Ekle")
-            .navigationBarItems(leading: Button("İptal") {
-                presentationMode.wrappedValue.dismiss()
-            })
+            .navigationTitle("Yeni Görev Ekle")
         }
     }
 
-    private func saveTask() {
+    private func addTask() {
         guard !newTaskTitle.isEmpty else { return }
-        
-        if selectedFolderIndex == folders.count {
-            // Yeni klasör oluşturulacaksa
-            if !newFolderName.isEmpty {
-                let newFolder = Folder(name: newFolderName, tasks: [Task(title: newTaskTitle)])
-                folders.append(newFolder)
-            }
+
+        if isAddingInsideFolder, let selectedFolderIndex = selectedFolderIndex {
+            // 📌 Klasör içinden çağrıldıysa sadece mevcut klasöre görev ekle
+            folders[selectedFolderIndex].tasks.append(Task(title: newTaskTitle, reminderDate: isReminderEnabled ? reminderDate : nil))
         } else {
-            // Mevcut klasöre görev ekleme
-            folders[selectedFolderIndex].tasks.append(Task(title: newTaskTitle))
+            // 📌 Ana sayfadan çağrıldıysa önce klasör seçmeli veya oluşturmalı
+            if selectedFolderIndex == -1 {
+                guard !folderNameInput.isEmpty else { return }
+                let newFolder = Folder(name: folderNameInput, tasks: [Task(title: newTaskTitle, reminderDate: isReminderEnabled ? reminderDate : nil)])
+                folders.append(newFolder)
+            } else if let selectedIndex = selectedFolderIndex {
+                let newTask = Task(title: newTaskTitle, reminderDate: isReminderEnabled ? reminderDate : nil)
+                folders[selectedIndex].tasks.append(newTask)
+            }
         }
 
-        presentationMode.wrappedValue.dismiss() // Sayfayı kapat
+        presentationMode.wrappedValue.dismiss()
     }
 }
 
-struct AddTaskView_Previews: PreviewProvider {
-    static var previews: some View {
-        AddTaskView(folders: .constant([
-            Folder(name: "Important", tasks: []),
-            Folder(name: "Daily", tasks: [])
-        ]))
-    }
-}
