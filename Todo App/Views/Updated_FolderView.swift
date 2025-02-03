@@ -15,6 +15,7 @@ struct FolderView: View {
                                 .foregroundColor(folder.tasks[index].isCompleted ? .green : .gray)
                                 .onTapGesture {
                                     folder.tasks[index].isCompleted.toggle()
+                                    saveFoldersToFile(folders: folders) // ✅ JSON güncelle
                                 }
 
                             VStack(alignment: .leading) {
@@ -34,10 +35,11 @@ struct FolderView: View {
                                 .foregroundColor(folder.tasks[index].isStarred ? .yellow : .gray)
                                 .onTapGesture {
                                     folder.tasks[index].isStarred.toggle()
+                                    saveFoldersToFile(folders: folders) // ✅ JSON güncelle
                                 }
                         }
                     }
-                    .onDelete(perform: deleteTask)
+                    .onDelete(perform: deleteTask) // ✅ Görev silme eklendi
                 }
             }
 
@@ -55,8 +57,10 @@ struct FolderView: View {
         .navigationTitle(folder.name)
     }
 
+    // 📂 **Görev Silme Fonksiyonu**
     private func deleteTask(at offsets: IndexSet) {
         folder.tasks.remove(atOffsets: offsets)
+        saveFoldersToFile(folders: folders) // ✅ JSON güncelle
     }
 
     // 📅 **Tarihi formatlamak için fonksiyon**
@@ -67,3 +71,4 @@ struct FolderView: View {
         return formatter.string(from: date)
     }
 }
+

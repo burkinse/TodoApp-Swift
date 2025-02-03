@@ -24,7 +24,7 @@ struct AddTaskView: View {
                             .padding(.horizontal)
 
                         Picker("Klasör Seç", selection: $selectedFolderIndex) {
-                            Text("Yeni Klasör Ekle").tag(-1) // ✅ Varsayılan olarak seçili olacak
+                            Text("Yeni Klasör Ekle").tag(-1)
                             ForEach(folders.indices, id: \.self) { index in
                                 Text(folders[index].name).tag(index)
                             }
@@ -32,7 +32,7 @@ struct AddTaskView: View {
                         .pickerStyle(MenuPickerStyle())
                         .padding(.horizontal)
                         .onAppear {
-                            selectedFolderIndex = -1 // ✅ Varsayılan olarak "Yeni Klasör Ekle" seçili
+                            selectedFolderIndex = -1
                         }
 
                         if selectedFolderIndex == -1 {
@@ -99,6 +99,9 @@ struct AddTaskView: View {
             }
         }
 
+        saveFoldersToFile(folders: folders) // ✅ JSON’a kaydetme işlemi eklendi
+
         presentationMode.wrappedValue.dismiss()
     }
 }
+
