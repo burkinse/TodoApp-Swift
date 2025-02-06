@@ -8,14 +8,14 @@ struct FolderView: View {
     var body: some View {
         VStack {
             List {
-                Section(header: Text("Aktif Görevler")) {
+                Section(header: Text("Active Tasks")) { // Changed to English
                     ForEach(folder.tasks.indices, id: \.self) { index in
                         HStack {
                             Image(systemName: folder.tasks[index].isCompleted ? "checkmark.circle.fill" : "circle")
                                 .foregroundColor(folder.tasks[index].isCompleted ? .green : .gray)
                                 .onTapGesture {
                                     folder.tasks[index].isCompleted.toggle()
-                                    saveFoldersToFile(folders: folders) // ✅ JSON güncelle
+                                    saveFoldersToFile(folders: folders) // ✅ Update JSON
                                 }
 
                             VStack(alignment: .leading) {
@@ -23,7 +23,7 @@ struct FolderView: View {
                                     .foregroundColor(folder.tasks[index].isCompleted ? .gray : .black)
 
                                 if let reminderDate = folder.tasks[index].reminderDate {
-                                    Text("\(formattedDate(reminderDate))") // 🕒 Tarihi göster
+                                    Text("\(formattedDate(reminderDate))") // 🕒 Display date
                                         .font(.caption)
                                         .foregroundColor(.gray)
                                 }
@@ -35,18 +35,18 @@ struct FolderView: View {
                                 .foregroundColor(folder.tasks[index].isStarred ? .yellow : .gray)
                                 .onTapGesture {
                                     folder.tasks[index].isStarred.toggle()
-                                    saveFoldersToFile(folders: folders) // ✅ JSON güncelle
+                                    saveFoldersToFile(folders: folders) // ✅ Update JSON
                                 }
                         }
                     }
-                    .onDelete(perform: deleteTask) // ✅ Görev silme eklendi
+                    .onDelete(perform: deleteTask) // ✅ Task deletion added
                 }
             }
 
             Spacer()
 
             Button(action: { showAddTaskView = true }) {
-                Label("Görev Ekle", systemImage: "plus.circle.fill")
+                Label("Add Task", systemImage: "plus.circle.fill") // Changed to English
                     .font(.headline)
                     .padding()
             }
@@ -57,16 +57,16 @@ struct FolderView: View {
         .navigationTitle(folder.name)
     }
 
-    // 📂 **Görev Silme Fonksiyonu**
+    // 📂 **Task Deletion Function**
     private func deleteTask(at offsets: IndexSet) {
         folder.tasks.remove(atOffsets: offsets)
-        saveFoldersToFile(folders: folders) // ✅ JSON güncelle
+        saveFoldersToFile(folders: folders) // ✅ Update JSON
     }
 
-    // 📅 **Tarihi formatlamak için fonksiyon**
+    // 📅 **Function to format the date**
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "tr_TR") // Türkçe tarih formatı
+        formatter.locale = Locale(identifier: "tr_TR") // Turkish date format
         formatter.dateFormat = "dd MMMM yyyy, HH:mm"
         return formatter.string(from: date)
     }

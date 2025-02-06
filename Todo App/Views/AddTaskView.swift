@@ -18,13 +18,13 @@ struct AddTaskView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     if !isAddingInsideFolder {
-                        Text("Klasör Seç")
+                        Text("Select Folder") // Changed to English
                             .font(.headline)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
 
-                        Picker("Klasör Seç", selection: $selectedFolderIndex) {
-                            Text("Yeni Klasör Ekle").tag(-1)
+                        Picker("Select Folder", selection: $selectedFolderIndex) { // Changed to English
+                            Text("Add New Folder").tag(-1) // Changed to English
                             ForEach(folders.indices, id: \.self) { index in
                                 Text(folders[index].name).tag(index)
                             }
@@ -36,33 +36,33 @@ struct AddTaskView: View {
                         }
 
                         if selectedFolderIndex == -1 {
-                            TextField("Yeni Klasör Adını Girin", text: $folderNameInput)
+                            TextField("Enter New Folder Name", text: $folderNameInput) // Changed to English
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .padding(.horizontal)
                         }
                     }
 
-                    TextField("Görev Adını Girin", text: $newTaskTitle)
+                    TextField("Enter Task Name", text: $newTaskTitle) // Changed to English
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding(.horizontal)
 
-                    Toggle("Hatırlatıcı Ekle", isOn: $isReminderEnabled)
+                    Toggle("Add Reminder", isOn: $isReminderEnabled) // Changed to English
                         .padding(.horizontal)
 
                     if isReminderEnabled {
-                        DatePicker("Hatırlatma Zamanı", selection: $reminderDate, displayedComponents: [.date, .hourAndMinute])
+                        DatePicker("Reminder Time", selection: $reminderDate, displayedComponents: [.date, .hourAndMinute]) // Changed to English
                             .datePickerStyle(GraphicalDatePickerStyle())
                             .padding()
                     }
 
-                    Toggle("Yıldızlı Görev", isOn: $isStarred)
+                    Toggle("Starred Task", isOn: $isStarred) // Changed to English
                         .padding(.horizontal)
 
                     Button(action: { addTask() }) {
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(.white)
-                            Text("Görevi Ekle")
+                            Text("Add Task") // Changed to English
                                 .foregroundColor(.white)
                                 .font(.headline)
                         }
@@ -78,7 +78,7 @@ struct AddTaskView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Yeni Görev Ekle")
+            .navigationTitle("Add New Task") // Changed to English
         }
     }
 
@@ -99,7 +99,7 @@ struct AddTaskView: View {
             }
         }
 
-        saveFoldersToFile(folders: folders) // ✅ JSON’a kaydetme işlemi eklendi
+        saveFoldersToFile(folders: folders) // ✅ Added saving to JSON
 
         presentationMode.wrappedValue.dismiss()
     }

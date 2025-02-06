@@ -4,34 +4,34 @@ import Foundation
 class NotificationManager {
     static let shared = NotificationManager()
 
-    // 📌 **Bildirim izni isteme (her açılışta kontrol eder)**
+    // 📌 **Request notification permission (checks on each startup)**
     func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             DispatchQueue.main.async {
                 if let error = error {
-                    print("Bildirim izni hatası: \(error.localizedDescription)")
+                    print("Notification permission error: \(error.localizedDescription)")
                 }
                 if granted {
-                    print("📢 Bildirim izni verildi!")
+                    print("📢 Notification permission granted!")
                 } else {
-                    print("❌ Kullanıcı bildirim izni vermedi!")
+                    print("❌ User did not grant notification permission!")
                 }
             }
         }
     }
 
-    // 📌 **Bildirim Planlama**
+    // 📌 **Schedule Notification**
     func scheduleNotification(for task: Task) {
         guard let reminderDate = task.reminderDate else {
-            print("⚠️ Hatırlatma tarihi ayarlanmadı!")
+            print("⚠️ Reminder date is not set!")
             return
         }
 
         let content = UNMutableNotificationContent()
-        content.title = "Hatırlatma"
+        content.title = "Reminder"
         content.body = "\(task.title)"
         content.sound = UNNotificationSound.default
-        content.badge = NSNumber(value: 1) // 📌 Bildirimi zorlamak için badge ekliyoruz
+        content.badge = NSNumber(value: 1) // 📌 Adding badge to force the notification
 
         let trigger = UNCalendarNotificationTrigger(
             dateMatching: Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: reminderDate),
@@ -42,20 +42,19 @@ class NotificationManager {
 
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
-                print("❌ Bildirim eklenirken hata oluştu: \(error.localizedDescription)")
+                print("❌ Error adding notification: \(error.localizedDescription)")
             } else {
-                print("✅ Bildirim başarıyla planlandı: \(task.title) - \(reminderDate)")
-                self.listPendingNotifications() // 📌 Bekleyen bildirimleri otomatik listele
+                print("✅ Notification successfully scheduled: \(task.title) - \(reminderDate)")
+                self.listPendingNotifications() // 📌 Automatically list pending notifications
             }
         }
     }
 
-    // 📌 **Bekleyen Bildirimleri Kontrol Et**
+    // 📌 **Check Pending Notifications**
     func listPendingNotifications() {
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-            print("📌 Bekleyen Bildirimler: \(requests.map { $0.identifier })")
+            print("📌 Pending Notifications: \(requests.map { $0.identifier })")
         }
     }
 }
-
 

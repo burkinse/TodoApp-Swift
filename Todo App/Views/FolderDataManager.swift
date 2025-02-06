@@ -2,19 +2,12 @@
 //  DataManager.swift
 //  Todo App
 //
-//  Created by Burak 2 on 2025-02-03.
-//
-
-//
-//  DataManager.swift
-//  Todo App
-//
-//  Created by Burak 2 on 2025-02-03.
+//  Created by Burak 2
 //
 
 import Foundation
 
-// 📂 **JSON Kaydetme Fonksiyonu**
+// 📂 **JSON Save Function**
 func saveFoldersToFile(folders: [Folder]) {
     let encoder = JSONEncoder()
     encoder.outputFormatting = .prettyPrinted
@@ -24,11 +17,11 @@ func saveFoldersToFile(folders: [Folder]) {
         let url = getDocumentsDirectory().appendingPathComponent("folders.json")
         try encodedData.write(to: url)
     } catch {
-        print("⚠️ Klasörleri kaydederken hata: \(error.localizedDescription)")
+        print("⚠️ Error saving folders: \(error.localizedDescription)")
     }
 }
 
-// 📂 **JSON'dan Veri Okuma Fonksiyonu**
+// 📂 **JSON Load Function**
 func loadFoldersFromFile() -> [Folder] {
     let url = getDocumentsDirectory().appendingPathComponent("folders.json")
 
@@ -41,7 +34,8 @@ func loadFoldersFromFile() -> [Folder] {
     return []
 }
 
-// 📂 **Belgeler Dizini**
+// 📂 **Documents Directory**
 func getDocumentsDirectory() -> URL {
     return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
 }
+

@@ -1,14 +1,14 @@
 import Foundation
 
-// Görev Modeli
-struct Task: Identifiable, Codable { // ✅ JSON için Codable ekledik
+// Task Model
+struct Task: Identifiable, Codable { // ✅ Added Codable for JSON support
     let id: UUID
     var title: String
     var isCompleted: Bool
-    var isStarred: Bool // 🌟 Yıldızlı görevler için eklendi
-    var reminderDate: Date? // 📅 Hatırlatıcı tarihi ve saati
+    var isStarred: Bool // 🌟 Added for starred tasks
+    var reminderDate: Date? // 📅 Reminder date and time
 
-    // Varsayılan değerler için bir init fonksiyonu ekledik
+    // Added an init function for default values
     init(id: UUID = UUID(), title: String, isCompleted: Bool = false, isStarred: Bool = false, reminderDate: Date? = nil) {
         self.id = id
         self.title = title
@@ -18,8 +18,8 @@ struct Task: Identifiable, Codable { // ✅ JSON için Codable ekledik
     }
 }
 
-// Klasör Modeli
-struct Folder: Identifiable, Codable { // ✅ JSON için Codable ekledik
+// Folder Model
+struct Folder: Identifiable, Codable { // ✅ Added Codable for JSON support
     let id: UUID
     var name: String
     var tasks: [Task]
